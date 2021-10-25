@@ -1,0 +1,104 @@
+attack-detection
+{
+	"attacked" : true/false,
+	"attack-mode" : "military/missile/aero/submarine/aircraft-carrier",
+	"attack-units" : x,
+	"coordinates" : {
+		"latitude" : xxx.xx,
+		"longitude" : xxx.xx
+	},
+	"datetime": "date and time of attack"
+}
+
+attack_detection
+id  attacked  attack_mode  attack_units coordinates_id datetime created_by created_time updated_by updated_time
+
+attack_coordinates
+id  latitude  longitude  created_by created_time updated_by updated_time  created_by created_time updated_by updated_time
+
+----------------------------------------------------------------------------------
+1. All services will read topic:attack-detection. 
+2. theater-command will save all messages in db.
+3. Rest all services will save their respective messages intended for them in db.
+4. theater-command-service will process the messages.
+5. theater-command-service will issue a command against attack-mode and save the cmd in db.
+6. theater-command-service will wait for the acknowledgement of the issued cmd and mark "done" in the db.
+7. Other services will receove a command against attack-mode and save the cmd in db.
+8. Other services will mark "sent" in db when acknowledgement is sent.
+----------------------------------------------------------------------------------
+theater-command-service
+topic: missile-firing-cmd
+{
+	"attack-mode" : "missile",
+	"attack-units" : x,
+	"coordinates" : {
+		"latitude" : xxx.xx,
+		"longitude" : xxx.xx
+	},
+	"datetime": "date and time of attack",
+	
+	"respond-with-attack-units" : xx,
+	"msg-issuer" : {
+		"issued-by" : "theater-cmd",
+		"to-ack-by" : "missile-srvc",
+		"ackd" : false
+	}
+}
+
+theater_cmd_issued
+id  attack_detection_id  respond_with_attack_unitss  msg_issuer_id  created_by created_time updated_by updated_time
+
+msg_issuer
+id  issued_by  to_ack_by  ackd  created_by created_time updated_by updated_time
+
+
+anti-missile-destroyer-service
+topic: missile-firing-cmd
+{
+	"attack-mode" : "missile",
+	"attack-units" : x,
+	"coordinates" : {
+		"latitude" : xxx.xx,
+		"longitude" : xxx.xx
+	},
+	"datetime": "date and time of attack",
+	"respond-with-attack-units" : xx,
+	"msg-issuer" : {
+		"issued-by" : "missile-srvc",
+		"to-ack-by" : "NA",
+		"ackd" : true
+	}
+}
+
+srvc_response_issued
+id  attack_detection_id  respond_with_attack_unitss  msg_issuer_id  created_by created_time updated_by updated_time
+
+msg_issuer
+id  issued_by  to_ack_by  ackd  created_by created_time updated_by updated_time
+
+----------------------------------------------------------------------------------
+Enumerations
+
+issued-by: 
+	theater-cmd 
+	missile-srvc
+	military-srvc
+	aero-srvc
+	submarine-srvc
+	aircraft-carrier-srvc
+	
+to-ack-by:
+	missile-srvc
+	military-srvc
+	aero-srvc
+	submarine-srvc
+	aircraft-carrier-srvc
+	
+attack-mode: 
+	military
+	missile
+	aero
+	submarine
+	aircraft-carrier
+	
+----------------------------------------------------------------------------------
