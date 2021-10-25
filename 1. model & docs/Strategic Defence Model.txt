@@ -1,4 +1,6 @@
 
+Common for all services
+
 attack-detection
 {
 	"uid" : "unique id",
