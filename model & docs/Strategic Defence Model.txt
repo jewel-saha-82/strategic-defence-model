@@ -1,5 +1,7 @@
+
 attack-detection
 {
+	"uid" : "unique id",
 	"attacked" : true/false,
 	"attack-mode" : "military/missile/aero/submarine/aircraft-carrier",
 	"attack-units" : x,
@@ -10,25 +12,25 @@ attack-detection
 	"datetime": "date and time of attack"
 }
 
-attack_detection
-id  attacked  attack_mode  attack_units coordinates_id datetime created_by created_time updated_by updated_time
+attack_detection_master
+id  uid  attacked  attack_mode  attack_units coordinates_id datetime created_by created_time updated_by updated_time
 
 attack_coordinates
-id  latitude  longitude  created_by created_time updated_by updated_time  created_by created_time updated_by updated_time
+id  latitude  longitude  created_by created_time updated_by updated_time
 
 ----------------------------------------------------------------------------------
 1. All services will read topic:attack-detection. 
-2. theater-command will save all messages in db.
-3. Rest all services will save their respective messages intended for them in db.
-4. theater-command-service will process the messages.
-5. theater-command-service will issue a command against attack-mode and save the cmd in db.
-6. theater-command-service will wait for the acknowledgement of the issued cmd and mark "done" in the db.
-7. Other services will receove a command against attack-mode and save the cmd in db.
-8. Other services will mark "sent" in db when acknowledgement is sent.
+2. All services will save the messages in db.
+3. theater-command-service will process the messages.
+4. theater-command-service will issue a command against attack-mode and save the cmd in the db. (microservice-orchestration-pattern)
+5. theater-command-service will wait for the acknowledgement of the issued cmd and mark "ackd" in the db.
+6. Other services will receive a command against respective attack-mode and save the cmd in their respective db.
+7. Other services will mark "ackd" in their respective db when acknowledgement is sent.
 ----------------------------------------------------------------------------------
 theater-command-service
 topic: missile-firing-cmd
 {
+	"uid" : "unique id",
 	"attack-mode" : "missile",
 	"attack-units" : x,
 	"coordinates" : {
@@ -46,7 +48,7 @@ topic: missile-firing-cmd
 }
 
 theater_cmd_issued
-id  attack_detection_id  respond_with_attack_unitss  msg_issuer_id  created_by created_time updated_by updated_time
+id  uid  attack_detection_id  respond_with_attack_unitss  msg_issuer_id  created_by created_time updated_by updated_time
 
 msg_issuer
 id  issued_by  to_ack_by  ackd  created_by created_time updated_by updated_time
@@ -55,6 +57,7 @@ id  issued_by  to_ack_by  ackd  created_by created_time updated_by updated_time
 anti-missile-destroyer-service
 topic: missile-firing-cmd
 {
+	"uid" : "unique id",
 	"attack-mode" : "missile",
 	"attack-units" : x,
 	"coordinates" : {
@@ -71,34 +74,43 @@ topic: missile-firing-cmd
 }
 
 srvc_response_issued
-id  attack_detection_id  respond_with_attack_unitss  msg_issuer_id  created_by created_time updated_by updated_time
+id  uid  attack_detection_id  respond_with_attack_unitss  msg_issuer_id  created_by created_time updated_by updated_time
 
 msg_issuer
 id  issued_by  to_ack_by  ackd  created_by created_time updated_by updated_time
 
 ----------------------------------------------------------------------------------
-Enumerations
+* Enumerations
 
-issued-by: 
-	theater-cmd 
-	missile-srvc
-	military-srvc
-	aero-srvc
-	submarine-srvc
-	aircraft-carrier-srvc
+	issued-by: 
+		theater-cmd 
+		missile-srvc
+		military-srvc
+		aero-srvc
+		submarine-srvc
+		aircraft-carrier-srvc
 	
-to-ack-by:
-	missile-srvc
-	military-srvc
-	aero-srvc
-	submarine-srvc
-	aircraft-carrier-srvc
+	to-ack-by:
+		missile-srvc
+		military-srvc
+		aero-srvc
+		submarine-srvc
+		aircraft-carrier-srvc
+		
+	attack-mode: 
+		military
+		missile
+		aero
+		submarine
+		aircraft-carrier
 	
-attack-mode: 
-	military
-	missile
-	aero
-	submarine
-	aircraft-carrier
+* uid = unique id
 	
+----------------------------------------------------------------------------------
+
+PMO Rest API calls
+
+1. /command-status
+2. /attack-detection
+
 ----------------------------------------------------------------------------------
